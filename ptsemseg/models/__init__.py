@@ -27,10 +27,14 @@ def get_model(name, n_classes, version=None):
         model.init_vgg16_params(vgg16)
 
     elif name == 'unet':
+#        model = model(n_classes=n_classes,
+#                      is_batchnorm=True,
+#                      in_channels=3,
+#                      is_deconv=True)
         model = model(n_classes=n_classes,
                       is_batchnorm=True,
                       in_channels=3,
-                      is_deconv=True)
+                      is_deconv=False)
 
     elif name == 'pspnet':
         model = model(n_classes=n_classes, version=version)

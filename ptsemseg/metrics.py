@@ -10,6 +10,9 @@ class runningScore(object):
         self.confusion_matrix = np.zeros((n_classes, n_classes))
 
     def _fast_hist(self, label_true, label_pred, n_class):
+        #print("len(label_true) is ", len(label_true))	
+        #print("len(label_pred) is ", len(label_pred))	
+        #print("n_class is ", n_class)	
         mask = (label_true >= 0) & (label_true < n_class)
         hist = np.bincount(
             n_class * label_true[mask].astype(int) +
@@ -28,6 +31,9 @@ class runningScore(object):
             - fwavacc
         """
         hist = self.confusion_matrix
+        print("hist is ", hist)
+        print("hist.sum() is ", hist.sum())
+        print("np.diag(hist).sum() is ", np.diag(hist).sum())
         acc = np.diag(hist).sum() / hist.sum()
         acc_cls = np.diag(hist) / hist.sum(axis=1)
         acc_cls = np.nanmean(acc_cls)

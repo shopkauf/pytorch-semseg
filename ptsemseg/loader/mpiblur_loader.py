@@ -11,8 +11,7 @@ from torch.utils import data
 from ptsemseg.utils import recursive_glob
 
 class MPIBlurLoader(data.Dataset):
-    def __init__(self, root, split="training", is_transform=False, img_size=(300,300), augmentations=None, img_norm=True):
-        print("David in init")
+    def __init__(self, root, split="training", is_transform=True, img_size=(300,300), augmentations=None, img_norm=True):
         self.root = root
         self.split = split
         self.is_transform = is_transform
@@ -21,23 +20,27 @@ class MPIBlurLoader(data.Dataset):
         self.n_classes = 2
         self.img_size = img_size if isinstance(img_size, tuple) else (img_size, img_size)
         self.mean = np.array([104.00699, 116.66877, 122.67892])
-        self.files = collections.defaultdict(list)
+        #self.files = collections.defaultdict(list)
 
-        for split in ["training", "validation",]:
+        #for split in ["training", "validation",]:
             #file_list = recursive_glob(rootdir=self.root + 'images/' + self.split + '/', suffix='.png')
-            file_list = recursive_glob(r'C:\data\Synthetic_blur_MPI_data\images\\' + split + '/', suffix='.png')
-            self.files[split] = file_list
-            print(file_list)
+        file_list = recursive_glob(r'C:\data\Synthetic_blur_MPI_data\images\\' + self.split + '/', suffix='.png')
+            #file_list = recursive_glob(r'C:\data\Synthetic_blur_MPI_data\images\\' + split + '/', suffix='.png')
+            #self.files[split] = file_list
+        self.files = file_list
+        print(file_list)
 			
 		
     def __len__(self):
-        return len(self.files[self.split])
+        #return len(self.files[self.split])
+        return len(self.files)
 
     def __getitem__(self, index):
-        img_path = self.files[self.split][index].rstrip() ## removes white spaces at the end
+        #img_path = self.files[self.split][index].rstrip() ## removes white spaces at the end
+        img_path = self.files[index].rstrip() ## removes white spaces at the end
         folder, filename = os.path.split(img_path) ## folder name is 'training' or 'validation'
         parent_folder, child_folder = os.path.split(folder)
-        print("parent_folder is ", parent_folder)
+        #print("parent_folder is ", parent_folder)
 		
         lbl_path = os.path.join(parent_folder, 'labels', filename[:-4] + '_seg.png')
 
@@ -64,7 +67,6 @@ class MPIBlurLoader(data.Dataset):
         img = img[:, :, ::-1] # RGB -> BGR
         img = img.astype(np.float64)
         img -= self.mean
-        print("David doing transform")
         if self.img_norm:
             # Resize scales images from 0 to 255, thus we need
             # to divide by 255.0
@@ -83,7 +85,7 @@ class MPIBlurLoader(data.Dataset):
 
 if __name__ == '__main__':
     local_path = 'C:\data\Synthetic_blur_MPI_data\images'
-    print("David running main")
+
     dst = MPIBlurLoader(local_path, is_transform=True)
     trainloader = data.DataLoader(dst, batch_size=4)
     for i, data in enumerate(trainloader):

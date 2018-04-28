@@ -27,12 +27,13 @@ def train(args):
     # Setup Dataloader
     data_loader = get_loader(args.dataset)
     data_path = get_data_path(args.dataset)
-    t_loader = data_loader(data_path, is_transform=True, img_size=(args.img_rows, args.img_cols), augmentations=data_aug, img_norm=args.img_norm)
-    v_loader = data_loader(data_path, is_transform=True, split='val', img_size=(args.img_rows, args.img_cols), img_norm=args.img_norm)
+    t_loader = data_loader(data_path, is_transform=True, split='training',   img_size=(args.img_rows, args.img_cols), augmentations=data_aug, img_norm=args.img_norm)
+    v_loader = data_loader(data_path, is_transform=True, split='validation', img_size=(args.img_rows, args.img_cols), img_norm=args.img_norm)
 
     n_classes = t_loader.n_classes
-    trainloader = data.DataLoader(t_loader, batch_size=args.batch_size, num_workers=8, shuffle=True)
-    valloader = data.DataLoader(v_loader, batch_size=args.batch_size, num_workers=8)
+    trainloader = data.DataLoader(t_loader, batch_size=args.batch_size, num_workers=2, shuffle=True)
+    valloader = data.DataLoader(v_loader, batch_size=args.batch_size, num_workers=2)
+
 
     # Setup Metrics
     running_metrics = runningScore(n_classes)
@@ -115,6 +116,8 @@ def train(args):
             outputs = model(images_val)
             pred = outputs.data.max(1)[1].cpu().numpy()
             gt = labels_val.data.cpu().numpy()
+            print("pred = ", pred)
+            print("gt = ", gt)
             running_metrics.update(gt, pred)
 
         score, class_iou = running_metrics.get_scores()
@@ -135,9 +138,9 @@ if __name__ == '__main__':
                         help='Architecture to use [\'fcn8s, unet, segnet etc\']')
     parser.add_argument('--dataset', nargs='?', type=str, default='pascal', 
                         help='Dataset to use [\'pascal, camvid, ade20k etc\']')
-    parser.add_argument('--img_rows', nargs='?', type=int, default=256, 
+    parser.add_argument('--img_rows', nargs='?', type=int, default=300, 
                         help='Height of the input image')
-    parser.add_argument('--img_cols', nargs='?', type=int, default=256, 
+    parser.add_argument('--img_cols', nargs='?', type=int, default=300, 
                         help='Width of the input image')
 
     parser.add_argument('--img_norm', dest='img_norm', action='store_true', 
@@ -148,7 +151,7 @@ if __name__ == '__main__':
 
     parser.add_argument('--n_epoch', nargs='?', type=int, default=100, 
                         help='# of the epochs')
-    parser.add_argument('--batch_size', nargs='?', type=int, default=1, 
+    parser.add_argument('--batch_size', nargs='?', type=int, default=10, 
                         help='Batch Size')
     parser.add_argument('--l_rate', nargs='?', type=float, default=1e-5, 
                         help='Learning Rate')
