@@ -13,7 +13,7 @@ class unet(nn.Module):
         #self.feature_scale = feature_scale
 
 #        filters = [64, 128, 256, 512, 1024]
-        filters = [8, 8, 8, 8, 8]
+        filters = [8, 16, 32, 16, 8]
         #filters = [int(x / self.feature_scale) for x in filters]
 
         # downsampling
@@ -58,12 +58,13 @@ class unet(nn.Module):
 #        maxpool4 = self.maxpool4(conv4)
 
   #      center = self.center(maxpool4)
+        center = self.center(conv4)
   #      up4 = self.up_concat4(conv4, center)
   #      up3 = self.up_concat3(conv3, up4)
   #      up2 = self.up_concat2(conv2, up3)
   #      up1 = self.up_concat1(conv1, up2)
 
 #        final = self.final(up1)
-        final = self.final(conv4)
+        final = self.final(center)
 
         return final

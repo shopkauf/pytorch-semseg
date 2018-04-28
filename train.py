@@ -105,8 +105,9 @@ def train(args):
                     win=loss_window,
                     update='append')
 
-            if (i+1) % 20 == 0:
+            if (i+1) % 5 == 0:
                 print("Epoch [%d/%d] Loss: %.4f" % (epoch+1, args.n_epoch, loss.data[0]))
+                torch.save(model, 'model_epoch_{:03d}.pth'.format(epoch))
 
         model.eval()
         for i_val, (images_val, labels_val) in tqdm(enumerate(valloader)):
