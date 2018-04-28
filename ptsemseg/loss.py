@@ -10,11 +10,13 @@ def cross_entropy2d(input, target, weight=None, size_average=True):
 
     # Handle inconsistent size between input and target
     if h > ht and w > wt: # upsample labels
-        target = target.unsequeeze(1)
-        target = F.upsample(target, size=(h, w), mode='nearest')
-        target = target.sequeeze(1)
+        raise Exception("bad")
+		#target = target.unsequeeze(1)
+        #target = F.upsample(target, size=(h, w), mode='nearest')
+        #target = target.sequeeze(1)
     elif h < ht and w < wt: # upsample images
-        input = F.upsample(input, size=(ht, wt), mode='bilinear')
+        raise Exception("bad 2")
+		#input = F.upsample(input, size=(ht, wt), mode='bilinear')
     elif h != ht and w != wt:
         raise Exception("Only support upsampling")
 

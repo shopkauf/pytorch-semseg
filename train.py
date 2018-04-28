@@ -152,7 +152,7 @@ if __name__ == '__main__':
 
     parser.add_argument('--n_epoch', nargs='?', type=int, default=100, 
                         help='# of the epochs')
-    parser.add_argument('--batch_size', nargs='?', type=int, default=10, 
+    parser.add_argument('--batch_size', nargs='?', type=int, default=4, 
                         help='Batch Size')
     parser.add_argument('--l_rate', nargs='?', type=float, default=1e-5, 
                         help='Learning Rate')

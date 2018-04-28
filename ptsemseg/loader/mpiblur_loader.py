@@ -64,19 +64,27 @@ class MPIBlurLoader(data.Dataset):
         #print("lbl size is ", lbl.shape[0], lbl.shape[1])
         #img = m.imresize(img, (self.img_size[0], self.img_size[1])) # uint8 with RGB mode
         #print("now, img size is ", img.shape[0], img.shape[1])
+        tmp = np.array(img)
+        #print("before transform, tmp max is ", tmp[:,:,0].max(), tmp[:,:,0].min())
         img = img[:, :, ::-1] # RGB -> BGR
         img = img.astype(np.float64)
         img -= self.mean
+        tmp = np.array(img)
+        #print("after reduce mean, tmp max is ", tmp[:,:,0].max(), tmp[:,:,0].min())
         if self.img_norm:
             # Resize scales images from 0 to 255, thus we need
             # to divide by 255.0
             img = img.astype(float) / 255.0
         # NHWC -> NCHW
+        tmp = np.array(img)
+        #print("after norm, tmp max is ", tmp[:,:,0].max(), tmp[:,:,0].min())	
         img = img.transpose(2, 0, 1)
         img = torch.from_numpy(img).float()
 
 		
         lbl = lbl.astype(int)
+        tmp = np.array(lbl)
+        #print("before transform, lbl max and min is ", lbl[:,:].max(), lbl[:,:].min())		
         lbl = torch.from_numpy(lbl).long()
         return img, lbl
 
@@ -88,11 +96,4 @@ if __name__ == '__main__':
 
     dst = MPIBlurLoader(local_path, is_transform=True)
     trainloader = data.DataLoader(dst, batch_size=4)
-    for i, data in enumerate(trainloader):
-        imgs, labels = data
-        if i == 0:
-            img = torchvision.utils.make_grid(imgs).numpy()
-            img = np.transpose(img, (1, 2, 0))
-            img = img[:, :, ::-1]
-            plt.imshow(img)
-            plt.show()
+
