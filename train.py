@@ -20,8 +20,9 @@ from ptsemseg.augmentations import *
 def train(args):
 
     # Setup Augmentations
-    data_aug= Compose([RandomRotate(10),                                        
-                       RandomHorizontallyFlip()])
+    #data_aug= Compose([RandomRotate(10),                                        
+    #                   RandomHorizontallyFlip()])
+    data_aug= Compose([RandomHorizontallyFlip()])
 
     # Setup Dataloader
     data_loader = get_loader(args.dataset)
@@ -50,20 +51,23 @@ def train(args):
     # Setup Model
     model = get_model(args.arch, n_classes)
     
-    model = torch.nn.DataParallel(model, device_ids=range(torch.cuda.device_count()))
-    model.cuda()
+    #model = torch.nn.DataParallel(model, device_ids=range(torch.cuda.device_count()))
+    #model = torch.nn.DataParallel(model)
+    #model.cuda()
     
     # Check if model has custom optimizer / loss
-    if hasattr(model.module, 'optimizer'):
-        optimizer = model.module.optimizer
-    else:
-        optimizer = torch.optim.SGD(model.parameters(), lr=args.l_rate, momentum=0.99, weight_decay=5e-4)
+    #if hasattr(model.module, 'optimizer'):
+    #    optimizer = model.module.optimizer
+    #else:
+     #   optimizer = torch.optim.SGD(model.parameters(), lr=args.l_rate, momentum=0.99, weight_decay=5e-4)
+    optimizer = torch.optim.SGD(model.parameters(), lr=args.l_rate, momentum=0.99, weight_decay=5e-4)
 
-    if hasattr(model.module, 'loss'):
-        print('Using custom loss')
-        loss_fn = model.module.loss
-    else:
-        loss_fn = cross_entropy2d
+#    if hasattr(model.module, 'loss'):
+#        print('Using custom loss')
+#        loss_fn = model.module.loss
+#    else:
+#        loss_fn = cross_entropy2d
+    loss_fn = cross_entropy2d
 
     if args.resume is not None:                                         
         if os.path.isfile(args.resume):
@@ -80,8 +84,10 @@ def train(args):
     for epoch in range(args.n_epoch):
         model.train()
         for i, (images, labels) in enumerate(trainloader):
-            images = Variable(images.cuda())
-            labels = Variable(labels.cuda())
+            #images = Variable(images.cuda())
+            #images = Variable(images)
+            #labels = Variable(labels.cuda())
+            #labels = Variable(labels)
 
             optimizer.zero_grad()
             outputs = model(images)
@@ -103,8 +109,8 @@ def train(args):
 
         model.eval()
         for i_val, (images_val, labels_val) in tqdm(enumerate(valloader)):
-            images_val = Variable(images_val.cuda(), volatile=True)
-            labels_val = Variable(labels_val.cuda(), volatile=True)
+            #images_val = Variable(images_val.cuda(), volatile=True)
+            #labels_val = Variable(labels_val.cuda(), volatile=True)
 
             outputs = model(images_val)
             pred = outputs.data.max(1)[1].cpu().numpy()
@@ -158,4 +164,5 @@ if __name__ == '__main__':
     parser.set_defaults(visdom=False)
 
     args = parser.parse_args()
+    print("David in train.py")
     train(args)

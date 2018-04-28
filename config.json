@@ -19,6 +19,11 @@
     "data_path": "/home/meet/datasets/ADE20K/"
   },
   
+  "mpiblur":
+  {
+    "data_path": "C:\\data\\Synthetic_blur_MPI_data\\images"
+  },
+
   "mit_sceneparsing_benchmark":
   {
     "data_path": "/home/ubuntu/DATA/ADEChallengeData2016/"
