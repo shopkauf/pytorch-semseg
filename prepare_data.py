@@ -51,3 +51,21 @@ for root, directories, filenames in os.walk(input_folder):
 			
 python train.py --dataset mpiblur --arch unet --img_rows 300 --img_cols 300
 
+
+
+
+from skimage import io
+from scipy import misc
+import os
+input_folder = r'C:\data\Synthetic_blur_MPI_data\original\validation'
+output_folder = r'C:\data\Synthetic_blur_MPI_data\original\validation'
+for root, directories, filenames in os.walk(input_folder):
+    for filename in filenames:
+        in_ffname = os.path.join(input_folder, filename)
+        out_ffname = os.path.join(output_folder, filename[:-4]+'_seg.png')
+        if os.path.exists(in_ffname):
+            im = io.imread( in_ffname ) 
+            mask = im * 0
+            mask = mask[:,:,0]
+            mask = mask + 0		
+            misc.imsave(out_ffname, mask)

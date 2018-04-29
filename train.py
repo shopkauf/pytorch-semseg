@@ -121,12 +121,11 @@ def train(args):
             if (i+1) % 5 == 0:
                 #print("Epoch [%d/%d] Loss: %.4f" % (epoch+1, args.n_epoch, loss.data[0]))
                 print("Epoch [%d/%d] Loss: %.4f" % (epoch + 1, args.n_epoch, G_loss.data[0]))
-                #torch.save(model, 'model_epoch_{:03d}.pth'.format(epoch))
-                #torch.save(netG, 'model_epoch_{:03d}.pth'.format(epoch))
-                state = {'epoch': epoch + 1,
-                         'model_state': netG.state_dict(),
-                         'optimizer_state': G_solver.state_dict(), }
-                torch.save(state, 'model_latest.pth')
+
+        state = {'epoch': epoch + 1,
+                 'model_state': netG.state_dict(),
+                 'optimizer_state': G_solver.state_dict(), }
+        torch.save(state, 'model_latest.pth')
 
         #model.eval()
         for i_val, (images_val, labels_val) in tqdm(enumerate(valloader)):
