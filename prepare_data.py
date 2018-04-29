@@ -4,55 +4,6 @@ from skimage.filters import gaussian
 from skimage import io
 import os
 
-# input_folder = r'C:\data\Synthetic_blur_MPI_data\original'
-# output_folder = r'C:\data\Synthetic_blur_MPI_data\blur_kernel_10'
-# for root, directories, filenames in os.walk(input_folder):
-    # for filename in filenames:
-        # out_ffname = os.path.join(output_folder, 'kern010_'+filename)
-        # if not os.path.exists(out_ffname):
-            # im = misc.imread(os.path.join(root, filename)) 
-            # blurred = gaussian(im, sigma=10,multichannel=True)  
-            # misc.imsave(out_ffname, blurred)
-
-
-### rename files
-# input_folder = r'C:\data\Synthetic_blur_MPI_data\blur_kernel_10'
-# for root, directories, filenames in os.walk(input_folder):
-    # for filename in filenames:
-        # out_ffname = os.path.join(input_folder, filename)
-        # if os.path.exists(out_ffname):
-            # new_ffname = os.path.join(input_folder, 'kern010_'+filename)
-            # os.rename(out_ffname, new_ffname)
-
-                
-
-## ground truth mask for original images
-# input_folder = r'C:\data\Synthetic_blur_MPI_data\original'
-# output_folder = r'C:\data\Synthetic_blur_MPI_data\images\training'
-# for root, directories, filenames in os.walk(input_folder):
-    # for filename in filenames:
-        # in_ffname = os.path.join(input_folder, filename)
-        # out_ffname = os.path.join(output_folder, filename[:-4]+'_seg.png')
-        # if os.path.exists(in_ffname):
-            # im = misc.imread(os.path.join(root, filename)) 
-            # mask = im * 0
-            # misc.imsave(out_ffname, mask)
-
-
-## ground truth mask for blurred images
-# input_folder = r'C:\data\Synthetic_blur_MPI_data\blur_kernel_10'
-# output_folder = r'C:\data\Synthetic_blur_MPI_data\images\training'
-# for root, directories, filenames in os.walk(input_folder):
-    # for filename in filenames:
-        # in_ffname = os.path.join(input_folder, filename)
-        # out_ffname = os.path.join(output_folder, filename[:-4]+'_seg.png')
-        # if os.path.exists(in_ffname):
-            # im = misc.imread(os.path.join(root, filename)) 
-            # mask = im * 0
-            # mask = mask + 1
-            # misc.imsave(out_ffname, mask)
-
-
 
 ### crop
 from skimage import io
@@ -67,7 +18,7 @@ for root, directories, filenames in os.walk(input_folder):
         out_ffname = os.path.join(output_folder, filename[:-4]+'.png')
         if os.path.exists(in_ffname):
             im = io.imread( in_ffname ) 
-            cropped = im[2500:2724,2500:2724,0:3]
+            cropped = im[2000:3024,2000:3024,0:3]
             misc.imsave(out_ffname, cropped)
             
             out_ffname_2 = os.path.join(output_folder_2, filename[:-4]+'_seg.png')
@@ -88,7 +39,7 @@ for root, directories, filenames in os.walk(input_folder):
         out_ffname = os.path.join(output_folder, filename[:-4]+'.png')
         if os.path.exists(in_ffname):
             im = io.imread( in_ffname ) 
-            cropped = im[3000:3224,2000:2224,0:3]
+            cropped = im[1000:2024,1000:2024,0:3]
             misc.imsave(out_ffname, cropped)
             
             out_ffname_2 = os.path.join(output_folder_2, filename[:-4]+'_seg.png')

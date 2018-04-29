@@ -13,7 +13,7 @@ from ptsemseg.utils import recursive_glob
 from scipy import misc
 
 class MPIBlurLoader(data.Dataset):
-    def __init__(self, root, split="training", is_transform=True, img_size=(300,300), augmentations=None, img_norm=True):
+    def __init__(self, root, split="training", is_transform=True, img_size=(1024,1024), augmentations=None, img_norm=True):
         self.root = root
         self.split = split
         self.is_transform = is_transform
@@ -50,12 +50,13 @@ class MPIBlurLoader(data.Dataset):
         img = np.array(img, dtype=np.uint8)
 
         lbl = m.imread(lbl_path)
-        lbl = np.array(lbl, dtype=np.int32)
+        #lbl = np.array(lbl, dtype=np.int32)
+        lbl = np.array(lbl, dtype=np.uint8)
 
 
 
-#        if self.augmentations is not None:
-#            img, lbl = self.augmentations(img, lbl)
+        if self.augmentations is not None:
+            img, lbl = self.augmentations(img, lbl)
 
         if self.is_transform:
             img, lbl = self.transform(img, lbl)

@@ -22,9 +22,10 @@ from scipy import misc
 def train(args):
 
     # Setup Augmentations
-    #data_aug= Compose([RandomRotate(10),                                        
+    #data_aug= Compose([RandomRotate(10),
     #                   RandomHorizontallyFlip()])
-    data_aug= Compose([RandomHorizontallyFlip()])
+    #data_aug= Compose([RandomHorizontallyFlip()])
+    data_aug = Compose([RandomHorizontallyFlip(), RandomCrop(224)])
 
     # Setup Dataloader
     data_loader = get_loader(args.dataset)
@@ -89,19 +90,19 @@ def train(args):
             #loss = loss_fn(input=outputs, target=labels)
             G_loss = F.smooth_l1_loss(G_fake, target=labels)
 
+            if (i + 1) % 10 == 3:
+                tmp = G_fake.data.cpu().numpy()
+                sample_output_img = tmp[0, 0, :, :]
+                misc.imsave(r'c:\tmp\output_img.png', sample_output_img)
 
-            tmp = G_fake.data.cpu().numpy()
-            sample_output_img = tmp[0, 0, :, :]
-            misc.imsave(r'c:\tmp\output_img.png', sample_output_img)
+                tmp = images.data.cpu().numpy()
+                sample_input_img = tmp[0, 0, :, :]
+                misc.imsave(r'c:\tmp\input_img.png', sample_input_img)
 
-            tmp = images.data.cpu().numpy()
-            sample_input_img = tmp[0, 0, :, :]
-            misc.imsave(r'c:\tmp\input_img.png', sample_input_img)
-
-            tmp = labels.data.cpu().numpy()
-            sample_target_img = tmp[0, 0, :, :]
-            sample_target_img = sample_target_img.astype(np.uint8);
-            misc.imsave(r'c:\tmp\target_img.png', sample_target_img)
+                tmp = labels.data.cpu().numpy()
+                sample_target_img = tmp[0, 0, :, :]
+                sample_target_img = sample_target_img.astype(np.uint8);
+                misc.imsave(r'c:\tmp\target_img.png', sample_target_img)
             #max_elem = sample_target_img.max()
             #print("max_elem = ", max_elem)
 
