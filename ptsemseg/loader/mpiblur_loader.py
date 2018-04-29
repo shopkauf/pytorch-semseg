@@ -69,23 +69,25 @@ class MPIBlurLoader(data.Dataset):
         img = img[:, :, ::-1] # RGB -> BGR
         img = img.astype(np.float64)
         img -= self.mean
-        tmp = np.array(img)
+        #tmp = np.array(img)
         #print("after reduce mean, tmp max is ", tmp[:,:,0].max(), tmp[:,:,0].min())
         if self.img_norm:
             # Resize scales images from 0 to 255, thus we need
             # to divide by 255.0
             img = img.astype(float) / 255.0
         # NHWC -> NCHW
-        tmp = np.array(img)
+        #tmp = np.array(img)
         #print("after norm, tmp max is ", tmp[:,:,0].max(), tmp[:,:,0].min())	
         img = img.transpose(2, 0, 1)
         img = torch.from_numpy(img).float()
 
 		
         lbl = lbl.astype(int)
-        tmp = np.array(lbl)
+        #tmp = np.array(lbl)
         #print("before transform, lbl max and min is ", lbl[:,:].max(), lbl[:,:].min())		
-        lbl = torch.from_numpy(lbl).long()
+        #lbl = torch.from_numpy(lbl).long()
+        lbl = np.expand_dims(lbl, 0) ## change dimension: [224,224] become [1,224,224]
+        lbl = torch.from_numpy(lbl).float()
         return img, lbl
 
 

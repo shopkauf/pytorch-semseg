@@ -67,7 +67,7 @@ for root, directories, filenames in os.walk(input_folder):
         out_ffname = os.path.join(output_folder, filename[:-4]+'.png')
         if os.path.exists(in_ffname):
             im = io.imread( in_ffname ) 
-            cropped = im[2500:2800,2500:2800,0:3]
+            cropped = im[2500:2724,2500:2724,0:3]
             misc.imsave(out_ffname, cropped)
             
             out_ffname_2 = os.path.join(output_folder_2, filename[:-4]+'_seg.png')
@@ -88,7 +88,7 @@ for root, directories, filenames in os.walk(input_folder):
         out_ffname = os.path.join(output_folder, filename[:-4]+'.png')
         if os.path.exists(in_ffname):
             im = io.imread( in_ffname ) 
-            cropped = im[3100:3400,2200:2500,0:3]
+            cropped = im[3000:3224,2000:2224,0:3]
             misc.imsave(out_ffname, cropped)
             
             out_ffname_2 = os.path.join(output_folder_2, filename[:-4]+'_seg.png')

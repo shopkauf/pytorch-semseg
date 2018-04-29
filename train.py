@@ -16,6 +16,8 @@ from ptsemseg.loader import get_loader, get_data_path
 from ptsemseg.metrics import runningScore
 from ptsemseg.loss import *
 from ptsemseg.augmentations import *
+from scipy import misc
+
 
 def train(args):
 
@@ -50,32 +52,21 @@ def train(args):
                                      legend=['Loss']))
 
     # Setup Model
-    model = get_model(args.arch, n_classes)
-    
-    #model = torch.nn.DataParallel(model, device_ids=range(torch.cuda.device_count()))
-    #model = torch.nn.DataParallel(model)
-    #model.cuda()
-    
-    # Check if model has custom optimizer / loss
-    #if hasattr(model.module, 'optimizer'):
-    #    optimizer = model.module.optimizer
-    #else:
-     #   optimizer = torch.optim.SGD(model.parameters(), lr=args.l_rate, momentum=0.99, weight_decay=5e-4)
-    optimizer = torch.optim.SGD(model.parameters(), lr=args.l_rate, momentum=0.99, weight_decay=5e-4)
+    #model = get_model(args.arch, n_classes)
+    from unet_1zb_pix2pix import weights_init, _netG
+    netG = _netG(input_nc=3, target_nc=1, ngf=64)
+    netG.apply(weights_init)
+    #optimizer = torch.optim.SGD(model.parameters(), lr=args.l_rate, momentum=0.99, weight_decay=5e-4)
+    G_solver = torch.optim.Adam(netG.parameters(), lr=0.0002, betas=(0.5, 0.999))
 
-#    if hasattr(model.module, 'loss'):
-#        print('Using custom loss')
-#        loss_fn = model.module.loss
-#    else:
-#        loss_fn = cross_entropy2d
     loss_fn = cross_entropy2d
 
     if args.resume is not None:                                         
         if os.path.isfile(args.resume):
             print("Loading model and optimizer from checkpoint '{}'".format(args.resume))
             checkpoint = torch.load(args.resume)
-            model.load_state_dict(checkpoint['model_state'])
-            optimizer.load_state_dict(checkpoint['optimizer_state'])
+            netG.load_state_dict(checkpoint['model_state'])
+            G_solver.load_state_dict(checkpoint['optimizer_state'])
             print("Loaded checkpoint '{}' (epoch {})"                    
                   .format(args.resume, checkpoint['epoch']))
         else:
@@ -83,20 +74,34 @@ def train(args):
 
     best_iou = -100.0 
     for epoch in range(args.n_epoch):
-        model.train()
+        #model.train()
         for i, (images, labels) in enumerate(trainloader):
             #images = Variable(images.cuda())
             #images = Variable(images)
             #labels = Variable(labels.cuda())
             #labels = Variable(labels)
 
-            optimizer.zero_grad()
-            outputs = model(images)
+            #optimizer.zero_grad()
+            netG.zero_grad()
+            #outputs = model(images)
+            G_fake = netG(images)
 
-            loss = loss_fn(input=outputs, target=labels)
+            #loss = loss_fn(input=outputs, target=labels)
+            G_loss = F.smooth_l1_loss(G_fake, target=labels)
 
-            loss.backward()
-            optimizer.step()
+
+            tmp = G_fake.data.cpu().numpy()
+            sample_output_img = tmp[0, 0, :, :]
+            misc.imsave(r'c:\tmp\sample_output_img.png', sample_output_img)
+
+            tmp = images.data.cpu().numpy()
+            sample_input_img = tmp[0, 0, :, :]
+            misc.imsave(r'c:\tmp\sample_input_img.png', sample_input_img)
+
+            #loss.backward()
+            #optimizer.step()
+            G_loss.backward()
+            G_solver.step()
 
             if args.visdom:
                 vis.line(
@@ -106,15 +111,18 @@ def train(args):
                     update='append')
 
             if (i+1) % 5 == 0:
-                print("Epoch [%d/%d] Loss: %.4f" % (epoch+1, args.n_epoch, loss.data[0]))
-                torch.save(model, 'model_epoch_{:03d}.pth'.format(epoch))
+                #print("Epoch [%d/%d] Loss: %.4f" % (epoch+1, args.n_epoch, loss.data[0]))
+                print("Epoch [%d/%d] Loss: %.4f" % (epoch + 1, args.n_epoch, G_loss.data[0]))
+                #torch.save(model, 'model_epoch_{:03d}.pth'.format(epoch))
+                torch.save(netG, 'model_epoch_{:03d}.pth'.format(epoch))
 
-        model.eval()
+        #model.eval()
         for i_val, (images_val, labels_val) in tqdm(enumerate(valloader)):
             #images_val = Variable(images_val.cuda(), volatile=True)
             #labels_val = Variable(labels_val.cuda(), volatile=True)
 
-            outputs = model(images_val)
+            #outputs = model(images_val)
+            outputs = netG(images_val)
             pred = outputs.data.max(1)[1].cpu().numpy()
             gt = labels_val.data.cpu().numpy()
             print("pred = ", pred)
@@ -129,8 +137,8 @@ def train(args):
         if score['Mean IoU : \t'] >= best_iou:
             best_iou = score['Mean IoU : \t']
             state = {'epoch': epoch+1,
-                     'model_state': model.state_dict(),
-                     'optimizer_state' : optimizer.state_dict(),}
+                     'model_state': netG.state_dict(),
+                     'optimizer_state' : G_solver.state_dict(),}
             torch.save(state, "{}_{}_best_model.pkl".format(args.arch, args.dataset))
 
 if __name__ == '__main__':
