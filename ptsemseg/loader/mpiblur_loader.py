@@ -10,6 +10,8 @@ from torch.utils import data
 
 from ptsemseg.utils import recursive_glob
 
+from scipy import misc
+
 class MPIBlurLoader(data.Dataset):
     def __init__(self, root, split="training", is_transform=True, img_size=(300,300), augmentations=None, img_norm=True):
         self.root = root
@@ -50,8 +52,10 @@ class MPIBlurLoader(data.Dataset):
         lbl = m.imread(lbl_path)
         lbl = np.array(lbl, dtype=np.int32)
 
-        if self.augmentations is not None:
-            img, lbl = self.augmentations(img, lbl)
+
+
+#        if self.augmentations is not None:
+#            img, lbl = self.augmentations(img, lbl)
 
         if self.is_transform:
             img, lbl = self.transform(img, lbl)
@@ -82,10 +86,12 @@ class MPIBlurLoader(data.Dataset):
         img = torch.from_numpy(img).float()
 
 		
-        lbl = lbl.astype(int)
+        #lbl = lbl.astype(int)
+        lbl = lbl.astype(float)
         #tmp = np.array(lbl)
         #print("before transform, lbl max and min is ", lbl[:,:].max(), lbl[:,:].min())		
         #lbl = torch.from_numpy(lbl).long()
+        lbl = lbl * 255 ## range 0 to 255
         lbl = np.expand_dims(lbl, 0) ## change dimension: [224,224] become [1,224,224]
         lbl = torch.from_numpy(lbl).float()
         return img, lbl

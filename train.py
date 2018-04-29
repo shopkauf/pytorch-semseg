@@ -38,7 +38,7 @@ def train(args):
 
 
     # Setup Metrics
-    running_metrics = runningScore(n_classes)
+    #running_metrics = runningScore(n_classes)
         
     # Setup visdom for visualization
     if args.visdom:
@@ -59,7 +59,7 @@ def train(args):
     #optimizer = torch.optim.SGD(model.parameters(), lr=args.l_rate, momentum=0.99, weight_decay=5e-4)
     G_solver = torch.optim.Adam(netG.parameters(), lr=0.0002, betas=(0.5, 0.999))
 
-    loss_fn = cross_entropy2d
+    #loss_fn = cross_entropy2d
 
     if args.resume is not None:                                         
         if os.path.isfile(args.resume):
@@ -74,7 +74,7 @@ def train(args):
 
     best_iou = -100.0 
     for epoch in range(args.n_epoch):
-        #model.train()
+
         for i, (images, labels) in enumerate(trainloader):
             #images = Variable(images.cuda())
             #images = Variable(images)
@@ -92,11 +92,18 @@ def train(args):
 
             tmp = G_fake.data.cpu().numpy()
             sample_output_img = tmp[0, 0, :, :]
-            misc.imsave(r'c:\tmp\sample_output_img.png', sample_output_img)
+            misc.imsave(r'c:\tmp\output_img.png', sample_output_img)
 
             tmp = images.data.cpu().numpy()
             sample_input_img = tmp[0, 0, :, :]
-            misc.imsave(r'c:\tmp\sample_input_img.png', sample_input_img)
+            misc.imsave(r'c:\tmp\input_img.png', sample_input_img)
+
+            tmp = labels.data.cpu().numpy()
+            sample_target_img = tmp[0, 0, :, :]
+            sample_target_img = sample_target_img.astype(np.uint8);
+            misc.imsave(r'c:\tmp\target_img.png', sample_target_img)
+            #max_elem = sample_target_img.max()
+            #print("max_elem = ", max_elem)
 
             #loss.backward()
             #optimizer.step()
@@ -114,32 +121,44 @@ def train(args):
                 #print("Epoch [%d/%d] Loss: %.4f" % (epoch+1, args.n_epoch, loss.data[0]))
                 print("Epoch [%d/%d] Loss: %.4f" % (epoch + 1, args.n_epoch, G_loss.data[0]))
                 #torch.save(model, 'model_epoch_{:03d}.pth'.format(epoch))
-                torch.save(netG, 'model_epoch_{:03d}.pth'.format(epoch))
+                #torch.save(netG, 'model_epoch_{:03d}.pth'.format(epoch))
+                state = {'epoch': epoch + 1,
+                         'model_state': netG.state_dict(),
+                         'optimizer_state': G_solver.state_dict(), }
+                torch.save(state, 'model_latest.pth')
 
         #model.eval()
         for i_val, (images_val, labels_val) in tqdm(enumerate(valloader)):
             #images_val = Variable(images_val.cuda(), volatile=True)
             #labels_val = Variable(labels_val.cuda(), volatile=True)
+            G_fake = netG(images_val)
+            tmp = G_fake.data.cpu().numpy()
+            validation_output_img = tmp[0, 0, :, :]
+            ffname = r'c:\tmp\validation_output_'+ str(i_val)+ '.png'
+            misc.imsave(ffname, validation_output_img)
 
-            #outputs = model(images_val)
-            outputs = netG(images_val)
-            pred = outputs.data.max(1)[1].cpu().numpy()
-            gt = labels_val.data.cpu().numpy()
-            print("pred = ", pred)
-            print("gt = ", gt)
-            running_metrics.update(gt, pred)
+            tmp = images_val.data.cpu().numpy()
+            validation_input_img = tmp[0, 0, :, :]
+            ffname = r'c:\tmp\validation_input_' + str(i_val) + '.png'
+            misc.imsave(ffname, validation_input_img)
 
-        score, class_iou = running_metrics.get_scores()
-        for k, v in score.items():
-            print(k, v)
-        running_metrics.reset()
+            tmp = labels_val.data.cpu().numpy()
+            sample_target_img = tmp[0, 0, :, :]
+            validation_target_img = sample_target_img.astype(np.uint8)
+            ffname = r'c:\tmp\validation_target_' + str(i_val) + '.png'
+            misc.imsave(ffname, validation_target_img)
 
-        if score['Mean IoU : \t'] >= best_iou:
-            best_iou = score['Mean IoU : \t']
-            state = {'epoch': epoch+1,
-                     'model_state': netG.state_dict(),
-                     'optimizer_state' : G_solver.state_dict(),}
-            torch.save(state, "{}_{}_best_model.pkl".format(args.arch, args.dataset))
+        #score, class_iou = running_metrics.get_scores()
+        #for k, v in score.items():
+        #    print(k, v)
+        #running_metrics.reset()
+
+        #if score['Mean IoU : \t'] >= best_iou:
+        #    best_iou = score['Mean IoU : \t']
+        #    state = {'epoch': epoch+1,
+        #             'model_state': netG.state_dict(),
+        #             'optimizer_state' : G_solver.state_dict(),}
+        #    torch.save(state, "{}_{}_best_model.pkl".format(args.arch, args.dataset))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Hyperparams')
