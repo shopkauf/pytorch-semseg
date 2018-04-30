@@ -53,19 +53,36 @@ python train.py --dataset mpiblur --arch unet --img_rows 300 --img_cols 300
 
 
 
-
+### convert jpg to png
 from skimage import io
 from scipy import misc
 import os
-input_folder = r'C:\data\Synthetic_blur_MPI_data\original\validation'
-output_folder = r'C:\data\Synthetic_blur_MPI_data\original\validation'
+input_folder = r'C:\data\Synthetic_blur_MPI_data\images\validation_sony'
+output_folder = r'C:\data\Synthetic_blur_MPI_data\images\validation_sony'
 for root, directories, filenames in os.walk(input_folder):
     for filename in filenames:
         in_ffname = os.path.join(input_folder, filename)
-        out_ffname = os.path.join(output_folder, filename[:-4]+'_seg.png')
+        out_ffname = os.path.join(output_folder, filename[:-4]+'.png')
         if os.path.exists(in_ffname):
             im = io.imread( in_ffname ) 
-            mask = im * 0
+            #misc.imsave(out_ffname, im)
+            misc.imsave(out_ffname, im[0]) ## for SONY
+			
+
+### create (fake) labels for SONY
+from skimage import io
+from scipy import misc
+import os
+input_folder = r'C:\data\Synthetic_blur_MPI_data\original\SONY'
+output_folder_2 = r'C:\data\Synthetic_blur_MPI_data\images\labels'
+for root, directories, filenames in os.walk(input_folder):
+    for filename in filenames:
+        in_ffname = os.path.join(input_folder, filename)
+        if os.path.exists(in_ffname):
+            im = io.imread( in_ffname ) 
+            
+            out_ffname_2 = os.path.join(output_folder_2, filename[:-4]+'_seg.png')
+            mask = im[0] * 0
             mask = mask[:,:,0]
-            mask = mask + 0		
-            misc.imsave(out_ffname, mask)
+            mask = mask +0	
+            misc.imsave(out_ffname_2, mask)

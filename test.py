@@ -22,7 +22,7 @@ from scipy import misc
 def test(args):
     # Setup Augmentations
 
-    data_aug = Compose([RandomHorizontallyFlip(), RandomCrop(1024)])
+    data_aug = Compose([RandomHorizontallyFlip(), RandomCrop(2496)]) ## use 2496 for SONY
 
     # Setup Dataloader
     data_loader = get_loader(args.dataset)
@@ -34,7 +34,7 @@ def test(args):
 
     n_classes = t_loader.n_classes
     trainloader = data.DataLoader(t_loader, batch_size=args.batch_size, num_workers=2, shuffle=True)
-    valloader = data.DataLoader(v_loader, batch_size=args.batch_size, num_workers=1)
+    valloader = data.DataLoader(v_loader, batch_size=1, num_workers=1)
 
     # Setup Metrics
     # running_metrics = runningScore(n_classes)
