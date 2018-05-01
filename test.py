@@ -58,6 +58,9 @@ def test(args):
     # optimizer = torch.optim.SGD(model.parameters(), lr=args.l_rate, momentum=0.99, weight_decay=5e-4)
     G_solver = torch.optim.Adam(netG.parameters(), lr=0.0002, betas=(0.5, 0.999))
 
+
+#    weight decay, epoch number is incorrect after loading old model, first few epochs result is bad
+
     # loss_fn = cross_entropy2d
 
     if args.resume is not None:

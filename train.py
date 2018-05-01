@@ -35,7 +35,7 @@ def train(args):
 
     n_classes = t_loader.n_classes
     trainloader = data.DataLoader(t_loader, batch_size=args.batch_size, num_workers=2, shuffle=True)
-    valloader = data.DataLoader(v_loader, batch_size=args.batch_size, num_workers=2)
+    valloader = data.DataLoader(v_loader, batch_size=1, num_workers=1)
 
 
     # Setup Metrics
@@ -90,7 +90,7 @@ def train(args):
             #loss = loss_fn(input=outputs, target=labels)
             G_loss = F.smooth_l1_loss(G_fake, target=labels)
 
-            if (i + 1) % 10 == 3:
+            if (i + 1) % 3 == 0:
                 tmp = G_fake.data.cpu().numpy()
                 sample_output_img = tmp[0, 0, :, :]
                 misc.imsave(r'c:\tmp\output_img.png', sample_output_img)
@@ -177,7 +177,7 @@ if __name__ == '__main__':
                         help='Disable input image scales normalization [0, 1] | True by default')
     parser.set_defaults(img_norm=True)
 
-    parser.add_argument('--n_epoch', nargs='?', type=int, default=100, 
+    parser.add_argument('--n_epoch', nargs='?', type=int, default=900,
                         help='# of the epochs')
     parser.add_argument('--batch_size', nargs='?', type=int, default=4, 
                         help='Batch Size')
