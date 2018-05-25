@@ -13,8 +13,8 @@ from ptsemseg.utils import recursive_glob
 from scipy import misc
 
 class MPIBlurLoader(data.Dataset):
-    def __init__(self, root, split="training", is_transform=True, img_size=(-1,-1), augmentations=None, img_norm=True):
-        self.root = root
+    def __init__(self, split="training", is_transform=True, img_size=(-1,-1), augmentations=None, img_norm=True):
+        self.root = r"C:\data\Synthetic_blur_MPI_data\images\\"
         self.split = split
         self.is_transform = is_transform
         self.augmentations = augmentations
@@ -24,9 +24,8 @@ class MPIBlurLoader(data.Dataset):
         self.mean = np.array([104.00699, 116.66877, 122.67892])
         #self.files = collections.defaultdict(list)
 
-        #for split in ["training", "validation",]:
-            #file_list = recursive_glob(rootdir=self.root + 'images/' + self.split + '/', suffix='.png')
-        file_list = recursive_glob(r'C:\data\Synthetic_blur_MPI_data\images\\' + self.split + '/', suffix='.png')
+        file_list = recursive_glob(rootdir=self.root + self.split + '/', suffix='.png')
+        #file_list = recursive_glob(r'C:\data\Synthetic_blur_MPI_data\images\\' + self.split + '/', suffix='.png')
             #file_list = recursive_glob(r'C:\data\Synthetic_blur_MPI_data\images\\' + split + '/', suffix='.png')
             #self.files[split] = file_list
         self.files = file_list

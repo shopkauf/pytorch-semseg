@@ -1,41 +1,28 @@
 import sys, os
 import torch
-import visdom
-import argparse
-import numpy as np
-import torch.nn as nn
 import torch.nn.functional as F
-import torchvision.models as models
-
 from torch.autograd import Variable
 from torch.utils import data
+import argparse
 from tqdm import tqdm
-
-from ptsemseg.models import get_model
-from ptsemseg.loader import get_loader, get_data_path
-from ptsemseg.metrics import runningScore
-from ptsemseg.loss import *
-from ptsemseg.augmentations import *
 from scipy import misc
+from ptsemseg.loader.mpiblur_loader import MPIBlurLoader
+from ptsemseg.augmentations import *
+#from ptsemseg.loss import *
 
 
 def train(args):
 
     # Setup Augmentations
-    #data_aug= Compose([RandomRotate(10),
-    #                   RandomHorizontallyFlip()])
-    #data_aug= Compose([RandomHorizontallyFlip()])
     data_aug = Compose([RandomHorizontallyFlip(), RandomCrop(224)])
 
     # Setup Dataloader
-    data_loader = get_loader(args.dataset)
-    data_path = get_data_path(args.dataset)
-    t_loader = data_loader(data_path, is_transform=True, split='training',   img_size=(args.img_rows, args.img_cols), augmentations=data_aug, img_norm=args.img_norm)
-    v_loader = data_loader(data_path, is_transform=True, split='validation', img_size=(args.img_rows, args.img_cols), img_norm=args.img_norm)
+    t_loader = MPIBlurLoader(is_transform=True, split='training',   img_size=(args.img_rows, args.img_cols), augmentations=data_aug, img_norm=True)
+    v_loader = MPIBlurLoader(is_transform=True, split='validation', img_size=(args.img_rows, args.img_cols), img_norm=True)
 
     n_classes = t_loader.n_classes
-    trainloader = data.DataLoader(t_loader, batch_size=args.batch_size, num_workers=2, shuffle=True)
-    valloader = data.DataLoader(v_loader, batch_size=1, num_workers=1)
+    trainloader = torch.utils.data.DataLoader(t_loader, batch_size=4, num_workers=2, shuffle=True)
+    valloader = torch.utils.data.DataLoader(v_loader, batch_size=1, num_workers=1)
 
 
     # Setup Model
@@ -44,6 +31,7 @@ def train(args):
     netG.apply(weights_init)
     G_solver = torch.optim.Adam(netG.parameters(), lr=0.0002, betas=(0.5, 0.999))
 
+    # Load trained model
     if args.resume is not None:                                         
         if os.path.isfile(args.resume):
             print("Loading model and optimizer from checkpoint '{}'".format(args.resume))
@@ -64,6 +52,7 @@ def train(args):
             G_fake = netG(images)
             G_loss = F.smooth_l1_loss(G_fake, target=labels)
 
+            # Dump to file (training data)
             if (i + 1) % 3 == 0:
                 tmp = G_fake.data.cpu().numpy()
                 sample_output_img = tmp[0, 0, :, :]
@@ -84,11 +73,13 @@ def train(args):
             if (i+1) % 5 == 0:
                 print("Epoch [%d/%d] Loss: %.4f" % (epoch + 1, args.n_epoch, G_loss.data[0]))
 
+        # Save model to file
         state = {'epoch': epoch + 1,
                  'model_state': netG.state_dict(),
                  'optimizer_state': G_solver.state_dict(), }
         torch.save(state, 'model_latest.pth')
 
+        # Dump to file (validation data)
         for i_val, (images_val, labels_val) in tqdm(enumerate(valloader)):
             #images_val = Variable(images_val.cuda(), volatile=True)
             #labels_val = Variable(labels_val.cuda(), volatile=True)
@@ -112,30 +103,13 @@ def train(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Hyperparams')
-    parser.add_argument('--arch', nargs='?', type=str, default='fcn8s', 
-                        help='Architecture to use [\'fcn8s, unet, segnet etc\']')
-    parser.add_argument('--dataset', nargs='?', type=str, default='pascal', 
-                        help='Dataset to use [\'pascal, camvid, ade20k etc\']')
-    parser.add_argument('--img_rows', nargs='?', type=int, default=300, 
+    parser.add_argument('--img_rows', nargs='?', type=int, default=-1,
                         help='Height of the input image')
-    parser.add_argument('--img_cols', nargs='?', type=int, default=300, 
+    parser.add_argument('--img_cols', nargs='?', type=int, default=-1,
                         help='Width of the input image')
-
-    parser.add_argument('--img_norm', dest='img_norm', action='store_true', 
-                        help='Enable input image scales normalization [0, 1] | True by default')
-    parser.add_argument('--no-img_norm', dest='img_norm', action='store_false', 
-                        help='Disable input image scales normalization [0, 1] | True by default')
-    parser.set_defaults(img_norm=True)
-
-    parser.add_argument('--n_epoch', nargs='?', type=int, default=900,
+    parser.add_argument('--n_epoch', nargs='?', type=int, default=1000,
                         help='# of the epochs')
-    parser.add_argument('--batch_size', nargs='?', type=int, default=4, 
-                        help='Batch Size')
-    parser.add_argument('--l_rate', nargs='?', type=float, default=1e-5, 
-                        help='Learning Rate')
-    parser.add_argument('--feature_scale', nargs='?', type=int, default=1, 
-                        help='Divider for # of features to use')
-    parser.add_argument('--resume', nargs='?', type=str, default=None,    
+    parser.add_argument('--resume', nargs='?', type=str, default=None,
                         help='Path to previous saved model to restart from')
 
     args = parser.parse_args()
