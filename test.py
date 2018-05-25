@@ -10,7 +10,6 @@ from torch.autograd import Variable
 from torch.utils import data
 from tqdm import tqdm
 
-from ptsemseg.loss import *
 from ptsemseg.augmentations import *
 from ptsemseg.loader.mpiblur_loader import MPIBlurLoader
 
@@ -19,7 +18,7 @@ from scipy import misc
 
 def test(args):
     # Setup Augmentations (must do crop of power of 2, to ensure feature maps from encoder and decoder match each other)
-    data_aug = Compose([RandomHorizontallyFlip(), RandomCrop(1248)]) ## use 2496 for SONY
+    data_aug = Compose([RandomHorizontallyFlip(), RandomCrop(1024)]) ## use 2496 for SONY
 
     # Setup Dataloader
     v_loader = MPIBlurLoader(is_transform=True, split='validation', img_size=(args.img_rows, args.img_cols), augmentations=data_aug, img_norm=True)
