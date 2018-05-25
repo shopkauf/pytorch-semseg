@@ -86,8 +86,5 @@ class MPIBlurLoader(data.Dataset):
 
 
 if __name__ == '__main__':
-    local_path = 'C:\data\Synthetic_blur_MPI_data\images'
-
-    dst = MPIBlurLoader(local_path, is_transform=True)
-    trainloader = data.DataLoader(dst, batch_size=4)
+    local_path = ''
 

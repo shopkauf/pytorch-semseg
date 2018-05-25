@@ -32,7 +32,8 @@ def train(args):
     G_solver = torch.optim.Adam(netG.parameters(), lr=0.0002, betas=(0.5, 0.999))
 
     # Load trained model
-    if args.resume is not None:                                         
+    #  TODO: weight decay, epoch number is incorrect after loading old model, first few epochs result is bad
+    if args.resume is not None:
         if os.path.isfile(args.resume):
             print("Loading model and optimizer from checkpoint '{}'".format(args.resume))
             checkpoint = torch.load(args.resume)
