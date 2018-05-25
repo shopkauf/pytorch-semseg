@@ -13,7 +13,7 @@ from ptsemseg.utils import recursive_glob
 from scipy import misc
 
 class MPIBlurLoader(data.Dataset):
-    def __init__(self, root, split="training", is_transform=True, img_size=(1024,1024), augmentations=None, img_norm=True):
+    def __init__(self, root, split="training", is_transform=True, img_size=(-1,-1), augmentations=None, img_norm=True):
         self.root = root
         self.split = split
         self.is_transform = is_transform
@@ -65,33 +65,19 @@ class MPIBlurLoader(data.Dataset):
 
 
     def transform(self, img, lbl):
-        #print("img size is ", img.shape[0], img.shape[1])
-        #print("lbl size is ", lbl.shape[0], lbl.shape[1])
-        #img = m.imresize(img, (self.img_size[0], self.img_size[1])) # uint8 with RGB mode
-        #print("now, img size is ", img.shape[0], img.shape[1])
         tmp = np.array(img)
-        #print("before transform, tmp max is ", tmp[:,:,0].max(), tmp[:,:,0].min())
         img = img[:, :, ::-1] # RGB -> BGR
         img = img.astype(np.float64)
         img -= self.mean
-        #tmp = np.array(img)
-        #print("after reduce mean, tmp max is ", tmp[:,:,0].max(), tmp[:,:,0].min())
         if self.img_norm:
             # Resize scales images from 0 to 255, thus we need
             # to divide by 255.0
             img = img.astype(float) / 255.0
-        # NHWC -> NCHW
-        #tmp = np.array(img)
-        #print("after norm, tmp max is ", tmp[:,:,0].max(), tmp[:,:,0].min())	
         img = img.transpose(2, 0, 1)
         img = torch.from_numpy(img).float()
 
 		
-        #lbl = lbl.astype(int)
         lbl = lbl.astype(float)
-        #tmp = np.array(lbl)
-        #print("before transform, lbl max and min is ", lbl[:,:].max(), lbl[:,:].min())		
-        #lbl = torch.from_numpy(lbl).long()
         lbl = lbl * 255 ## range 0 to 255
         lbl = np.expand_dims(lbl, 0) ## change dimension: [224,224] become [1,224,224]
         lbl = torch.from_numpy(lbl).float()

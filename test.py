@@ -51,17 +51,13 @@ def test(args):
                                          legend=['Loss']))
 
     # Setup Model
-    # model = get_model(args.arch, n_classes)
     from unet_1zb_pix2pix import weights_init, _netG
     netG = _netG(input_nc=3, target_nc=1, ngf=64)
     netG.apply(weights_init)
-    # optimizer = torch.optim.SGD(model.parameters(), lr=args.l_rate, momentum=0.99, weight_decay=5e-4)
     G_solver = torch.optim.Adam(netG.parameters(), lr=0.0002, betas=(0.5, 0.999))
 
 
 #    weight decay, epoch number is incorrect after loading old model, first few epochs result is bad
-
-    # loss_fn = cross_entropy2d
 
     if args.resume is not None:
         if os.path.isfile(args.resume):
@@ -125,12 +121,6 @@ if __name__ == '__main__':
                         help='Divider for # of features to use')
     parser.add_argument('--resume', nargs='?', type=str, default=None,
                         help='Path to previous saved model to restart from')
-
-    parser.add_argument('--visdom', dest='visdom', action='store_true',
-                        help='Enable visualization(s) on visdom | False by default')
-    parser.add_argument('--no-visdom', dest='visdom', action='store_false',
-                        help='Disable visualization(s) on visdom | False by default')
-    parser.set_defaults(visdom=False)
 
     args = parser.parse_args()
     print("David in test.py")

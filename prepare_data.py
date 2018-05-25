@@ -49,7 +49,6 @@ for root, directories, filenames in os.walk(input_folder):
             misc.imsave(out_ffname_2, mask)
             
 			
-python train.py --dataset mpiblur --arch unet --img_rows 300 --img_cols 300
 
 
 

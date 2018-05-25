@@ -38,29 +38,11 @@ def train(args):
     valloader = data.DataLoader(v_loader, batch_size=1, num_workers=1)
 
 
-    # Setup Metrics
-    #running_metrics = runningScore(n_classes)
-        
-    # Setup visdom for visualization
-    if args.visdom:
-        vis = visdom.Visdom()
-
-        loss_window = vis.line(X=torch.zeros((1,)).cpu(),
-                           Y=torch.zeros((1)).cpu(),
-                           opts=dict(xlabel='minibatches',
-                                     ylabel='Loss',
-                                     title='Training Loss',
-                                     legend=['Loss']))
-
     # Setup Model
-    #model = get_model(args.arch, n_classes)
     from unet_1zb_pix2pix import weights_init, _netG
     netG = _netG(input_nc=3, target_nc=1, ngf=64)
     netG.apply(weights_init)
-    #optimizer = torch.optim.SGD(model.parameters(), lr=args.l_rate, momentum=0.99, weight_decay=5e-4)
     G_solver = torch.optim.Adam(netG.parameters(), lr=0.0002, betas=(0.5, 0.999))
-
-    #loss_fn = cross_entropy2d
 
     if args.resume is not None:                                         
         if os.path.isfile(args.resume):
@@ -73,21 +55,13 @@ def train(args):
         else:
             print("No checkpoint found at '{}'".format(args.resume)) 
 
-    best_iou = -100.0 
     for epoch in range(args.n_epoch):
 
         for i, (images, labels) in enumerate(trainloader):
             #images = Variable(images.cuda())
-            #images = Variable(images)
             #labels = Variable(labels.cuda())
-            #labels = Variable(labels)
-
-            #optimizer.zero_grad()
             netG.zero_grad()
-            #outputs = model(images)
             G_fake = netG(images)
-
-            #loss = loss_fn(input=outputs, target=labels)
             G_loss = F.smooth_l1_loss(G_fake, target=labels)
 
             if (i + 1) % 3 == 0:
@@ -101,25 +75,13 @@ def train(args):
 
                 tmp = labels.data.cpu().numpy()
                 sample_target_img = tmp[0, 0, :, :]
-                sample_target_img = sample_target_img.astype(np.uint8);
+                sample_target_img = sample_target_img.astype(np.uint8)
                 misc.imsave(r'c:\tmp\target_img.png', sample_target_img)
-            #max_elem = sample_target_img.max()
-            #print("max_elem = ", max_elem)
 
-            #loss.backward()
-            #optimizer.step()
             G_loss.backward()
             G_solver.step()
 
-            if args.visdom:
-                vis.line(
-                    X=torch.ones((1, 1)).cpu() * i,
-                    Y=torch.Tensor([loss.data[0]]).unsqueeze(0).cpu(),
-                    win=loss_window,
-                    update='append')
-
             if (i+1) % 5 == 0:
-                #print("Epoch [%d/%d] Loss: %.4f" % (epoch+1, args.n_epoch, loss.data[0]))
                 print("Epoch [%d/%d] Loss: %.4f" % (epoch + 1, args.n_epoch, G_loss.data[0]))
 
         state = {'epoch': epoch + 1,
@@ -127,7 +89,6 @@ def train(args):
                  'optimizer_state': G_solver.state_dict(), }
         torch.save(state, 'model_latest.pth')
 
-        #model.eval()
         for i_val, (images_val, labels_val) in tqdm(enumerate(valloader)):
             #images_val = Variable(images_val.cuda(), volatile=True)
             #labels_val = Variable(labels_val.cuda(), volatile=True)
@@ -148,17 +109,6 @@ def train(args):
             ffname = r'c:\tmp\validation_target_' + str(i_val) + '.png'
             misc.imsave(ffname, validation_target_img)
 
-        #score, class_iou = running_metrics.get_scores()
-        #for k, v in score.items():
-        #    print(k, v)
-        #running_metrics.reset()
-
-        #if score['Mean IoU : \t'] >= best_iou:
-        #    best_iou = score['Mean IoU : \t']
-        #    state = {'epoch': epoch+1,
-        #             'model_state': netG.state_dict(),
-        #             'optimizer_state' : G_solver.state_dict(),}
-        #    torch.save(state, "{}_{}_best_model.pkl".format(args.arch, args.dataset))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Hyperparams')
@@ -188,12 +138,6 @@ if __name__ == '__main__':
     parser.add_argument('--resume', nargs='?', type=str, default=None,    
                         help='Path to previous saved model to restart from')
 
-    parser.add_argument('--visdom', dest='visdom', action='store_true', 
-                        help='Enable visualization(s) on visdom | False by default')
-    parser.add_argument('--no-visdom', dest='visdom', action='store_false', 
-                        help='Disable visualization(s) on visdom | False by default')
-    parser.set_defaults(visdom=False)
-
     args = parser.parse_args()
-    print("David in train.py")
+    print("in train.py")
     train(args)
